@@ -1,28 +1,30 @@
 // src/queryParser.js
 
-function parseQuery(query) {
-    const selectRegex = /SELECT (.+?) FROM (.+?)(?: WHERE (.*))?$/i;
-    const match = query.match(selectRegex);
+// ...existing code...
 
-    if (match) {
-        const [, fields, table, whereString] = match;
-        const whereClauses = whereString ? parseWhereClause(whereString) : [];
+function parseJoinClause(query) {
+    const joinRegex = /\s(INNER|LEFT|RIGHT) JOIN\s(.+?)\sON\s([\w.]+)\s*=\s*([\w.]+)/i;
+    const joinMatch = query.match(joinRegex);
+
+    if (joinMatch) {
         return {
-            fields: fields.split(',').map(field => field.trim()),
-            table: table.trim(),
-            whereClauses
+            joinType: joinMatch[1].trim(),
+            joinTable: joinMatch[2].trim(),
+            joinCondition: {
+                left: joinMatch[3].trim(),
+                right: joinMatch[4].trim()
+            }
         };
-    } else {
-        throw new Error('Invalid query format');
     }
+
+    return {
+        joinType: null,
+        joinTable: null,
+        joinCondition: null
+    };
 }
 
-function parseWhereClause(whereString) {
-    const conditions = whereString.split(/ AND | OR /i);
-    return conditions.map(condition => {
-        const [field, operator, value] = condition.split(/\s+/);
-        return { field, operator, value };
-    });
-}
+// Update the parseQuery function to use parseJoinClause
+// ...existing code...
 
-module.exports = parseQuery;
+module.exports = { parseQuery, parseJoinClause };
